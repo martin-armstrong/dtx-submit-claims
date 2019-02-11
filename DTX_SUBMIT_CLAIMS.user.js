@@ -5,6 +5,8 @@
 // @description  Makes the DTX Submit Claims page work in Chrome
 // @author       martin.armstrong@capgemini.com
 // @match        https://*/*/DTX.NET/*
+// @match        https://*/DTX.NET/*
+// @match        http://*/*/DTX.NET/*
 // @match        http://*/DTX.NET/*
 // @grant        none
 // ==/UserScript==
