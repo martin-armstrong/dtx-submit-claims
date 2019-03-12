@@ -1,7 +1,9 @@
 // ==UserScript==
 // @name         DTX_SUBMIT_CLAIMS
-// @namespace    http://webvpnuk.capgemini.com/
-// @version      1.0
+// @namespace    capgemini.com
+// @version      1.1
+// @updateURL    https://github.com/martin-armstrong/dtx-submit-claims/raw/master/DTX_SUBMIT_CLAIMS.user.js
+// @downloadURL  https://github.com/martin-armstrong/dtx-submit-claims/raw/master/DTX_SUBMIT_CLAIMS.user.js
 // @description  Makes the DTX Submit Claims page work in Chrome
 // @author       martin.armstrong@capgemini.com
 // @match        https://*/*/DTX.NET/*
@@ -9,6 +11,9 @@
 // @match        http://*/*/DTX.NET/*
 // @match        http://*/DTX.NET/*
 // @grant        none
+
+// 1.1 - 12/03/2019 - fixes following update to claimSubmissionPage.js
+
 // ==/UserScript==
 
 (function(){
@@ -115,18 +120,11 @@
        }
     }
 
-    //completes script text which wierdly only partially loads in chrome
-    //the DriverSurveyCheck function is also replaced with the comlpete version myDriverSurveyCheck below
-    function fixScript(script) {
-        console.log("Fixing broken claimSubmissionPage.js..");
-        script = script + "'); } }";
-        return script;
-    }
-
 
     // copy of XMLListOfProjects that swaps element.text for element.innerHTML for Chrome support
     // also sets xmlProjectList.xml = xmlProjectList.documentElement.outerHTML which you get in IE
     function myXMLListOfProjects(includeItemList) {
+        console.log("Running myXMLListOfProjects..");
         var xmlProjectList = parseXML( "<ProjectList/>" );
         document.getElementById("hdnCategorySurveyRequirements").value = ""; //added for CCR_1505
         // list through the project table
@@ -241,7 +239,7 @@
     //also simpler confirmation alert
     function mySubmitClaims()
     {
-
+            console.log("Running mySubmitClaims()");
             var claimtypes=false;  //added for CCR_1323
 
             // gather claim information and submit it for processing.
@@ -277,11 +275,11 @@
                     window.location = "MyClaims.aspx"; //passThroughMessage=" + passThroughMessage;
                 }
                 else {                    
-                    for(var i = 0 ; i < projectsTable.documentElement.selectNodes("Claims").length ; i++ )
+                    for(var j = 0 ; j < projectsTable.documentElement.selectNodes("Claims").length ; j++ )
                     {
-                        if ( projectsTable.documentElement.selectSingleNode("Claims[" + i + "]/ErrorMessage") != null)
+                        if ( projectsTable.documentElement.selectSingleNode("Claims[" + j + "]/ErrorMessage") != null)
                         {
-                            passThroughMessage = passThroughMessage + projectsTable.documentElement.selectSingleNode("Claims[" + i + "]/ErrorMessage").innerHTML + " \r\n";
+                            passThroughMessage = passThroughMessage + projectsTable.documentElement.selectSingleNode("Claims[" + j + "]/ErrorMessage").innerHTML + " \r\n";
                         }
                     }
                     alert("There were the following errors with the claims submitted : \r\n" + passThroughMessage);
@@ -293,6 +291,7 @@
 
 //Complete version of DriverSurveyCheck as you get in IE but for some reason doesn't load in Chrome
 function myDriverSurveyCheck()  {
+     console.log("Running myDriverSurveyCheck()");
              XMLListOfProjects(true);
 
              if ( document.getElementById("hdnCategorySurveyRequirements").value == "Y")
@@ -339,34 +338,18 @@ function myDriverSurveyCheck()  {
 
 //when claimSubmissionPage.js has been evaluated this replaces some of the functions with fixed/Chrome compatible ones..
     function postEvalScriptAlterations(){
+        console.log("Replacing XMLListOfProjects()");
        XMLListOfProjects = myXMLListOfProjects;
+        console.log("Replacing DriverSurveyCheck()");
        DriverSurveyCheck = myDriverSurveyCheck;
+        console.log("Replacing submitClaims()");
        submitClaims = mySubmitClaims;
     }
 
-    if(typeof window.documentReady=="function") {
-        console.log("Running documentReady()");
-        setTimeout(window.documentReady, 500);
-    }
-    else {
-        console.log("documentReady() not found, building/running replacement script..");
-        var scriptTags = document.getElementsByTagName("script");
 
-        for(var i=0;i<scriptTags.length;i++) {
-          var el = scriptTags[i];
-          if(el.src.endsWith("claimSubmissionPage.js")) {
-              console.log("Loading broken claimSubmissionPage.js..");
-              window.$.get(el.src,
-                  null,
-                  (data, status, xhr) => {
-                    window.eval(fixScript(data));
-                    postEvalScriptAlterations();
-                    window.documentReady();
-                  },
-                  "application/x-javascript")
-          }
-        }
-
-    }
+    console.log("Altering claimSubmissionPage.js functions..");
+    postEvalScriptAlterations();
+    console.log("Re-running documentReady() using altered claimSubmissionPage.js functions..");
+    setTimeout(window.documentReady, 500);
 
 })()
