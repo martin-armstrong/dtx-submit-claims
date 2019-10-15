@@ -1,5 +1,7 @@
 # dtx-submit-claims
 
+THIS SCRIPT SHOULD BE REDUNDANT NOW AS DTX WAS UPDATED
+
 This is a TamperMonkey script (a browser extension) which alters the code for the web DTX submit claims tab so it will work properly in Chrome. (Only IE is officially supported)
 
 # Set up
